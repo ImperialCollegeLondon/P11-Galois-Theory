@@ -1,15 +1,16 @@
-import data.fintype
+import .algebra data.fintype linear_algebra.dimension
 
-definition is_finite_Galois_extension_of : Type* → Type* → Type* := sorry
+universes u v w
 
-definition galois_group : Type* → Type* → Type* := sorry
+variables (K : Type u) (L : Type v) [discrete_field K] [field L]
 
-instance {L K : Type*} (Hfin : is_finite_Galois_extension_of L K) :
+class finite_Galois_extension extends algebra K L.
+
+definition galois_group : Type u → Type v → Type w := sorry
+
+instance [finite_Galois_extension K L] :
 fintype (galois_group L K) := sorry
 
 -- needs fixing
-theorem fundamental_theorem_of_Galois_theory
-(K : Type*) [field K]
-(L : Type*) (HL : is_finite_Galois_extension_of K L) :
-fintype.card (galois_group L K) = dimension K L := sorry
-
+theorem fundamental_theorem_of_Galois_theory (HL : finite_Galois_extension K L) :
+(fintype.card (galois_group L K) : cardinal) = vector_space.dim K L := sorry

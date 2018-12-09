@@ -101,7 +101,7 @@ end alg_hom
 
 namespace polynomial
 
-variables {R : Type u} {A : Type v}
+variables (R : Type u) {A : Type v}
 variables [comm_ring R] [comm_ring A] (i : algebra R A)
 variables [decidable_eq R] (x : A)
 
@@ -110,10 +110,10 @@ def aeval : (algebra.polynomial R) →ₐ i :=
   hom := ⟨eval₂_one _ x, λ _ _, eval₂_mul _ x, λ _ _, eval₂_add _ x⟩,
   commutes := λ r, eval₂_C _ _ }
 
-theorem aeval_def (p : polynomial R) : (aeval i x : _ → A) p = eval₂ i x p :=
+theorem aeval_def (p : polynomial R) : aeval R i x p = eval₂ i x p :=
 rfl
 
-instance aeval.is_ring_hom : is_ring_hom (aeval i x) :=
+instance aeval.is_ring_hom : is_ring_hom (aeval R i x) :=
 alg_hom.hom _
 
 theorem eval_unique (φ : algebra.polynomial R →ₐ i) (p) :

@@ -98,6 +98,12 @@ def aeval : (polynomial R) →ₐ A :=
   commutes := λ r, show eval₂ (algebra.f A) x (C r * 1) = _,
     by rw [eval₂_mul, eval₂_C, eval₂_one]; refl }
 
+theorem aeval_def (p : polynomial R) : aeval R A x p = eval₂ (algebra.f A) x p :=
+rfl
+
+instance aeval.is_ring_hom : is_ring_hom (aeval R A x) :=
+alg_hom.hom _
+
 theorem eval_unique (φ : polynomial R →ₐ A) (p) :
   φ p = eval₂ (algebra.f A) (φ X) p :=
 begin

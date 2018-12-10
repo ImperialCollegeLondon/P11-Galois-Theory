@@ -40,14 +40,14 @@ le_antisymm
     (set.range_subset_iff.2 $ λ r, or.inl ⟨(i.adjoin s).algebra r, rfl⟩)
     (set.union_subset_union_left _ $ λ x hxs, ⟨⟨_, subset_adjoin hxs⟩, rfl⟩))
 
-def linear_map.module : module R (i.to_module →ₗ i.to_module) := linear_map.module
+def linear_map.module : module R (i.mod →ₗ i.mod) := linear_map.module
 
 local attribute [instance] linear_map.module
 
-instance : has_mul (submodule R i.to_module) :=
+instance : has_mul (submodule R i.mod) :=
 ⟨λ S1 S2, ⨆ s : S1, S2.map $ i.lmul s.1⟩
 
-variables {i} {S1 S2 T : submodule R i.to_module} {s1 s2 : A}
+variables {i} {S1 S2 T : submodule R i.mod} {s1 s2 : A}
 
 theorem mul_mem_mul (hs1 : s1 ∈ S1) (hs2 : s2 ∈ S2) : s1 * s2 ∈ S1 * S2 :=
 have _ ≤ S1 * S2 := le_supr _ ⟨s1, hs1⟩, this ⟨s2, hs2, rfl⟩
@@ -57,7 +57,7 @@ theorem mul_le : S1 * S2 ≤ T ↔ ∀ (s1 ∈ S1) (s2 ∈ S2), s1 * s2 ∈ T :=
 λ H, supr_le $ λ ⟨s1, hs1⟩, map_le_iff_le_comap.2 $ λ s2 hs2, H s1 hs1 s2 hs2⟩
 
 @[elab_as_eliminator] protected theorem mul_induction
-  {r : i.to_module} {C : i.to_module → Prop} (hr : r ∈ S1 * S2)
+  {r : i.mod} {C : i.mod → Prop} (hr : r ∈ S1 * S2)
   (hm : ∀ (s1 ∈ S1) (s2 ∈ S2), C (s1 * s2))
   (h0 : C 0) (ha : ∀ x y, C x → C y → C (x + y))
   (hs : ∀ r x, C x → C (has_scalar.smul.{u v} r x)) : C r :=
@@ -88,15 +88,15 @@ begin
       (adjoin_mono (set.subset_union_right _ _) hs2) }
 end
 
-theorem span_mul_span (s1 s2 : set i.to_module) :
-  (span s1 * span s2 : submodule R i.to_module) = span ((s1.prod s2).image (λ p, p.1 * p.2)) :=
+theorem span_mul_span (s1 s2 : set i.mod) :
+  (span s1 * span s2 : submodule R i.mod) = span ((s1.prod s2).image (λ p, p.1 * p.2)) :=
 le_antisymm
   (mul_le.2 $ λ x1 hx1 x2 hx2, span_induction hx1
     (λ y1 hy1, span_induction hx2
       (λ y2 hy2, subset_span ⟨(y1, y2), ⟨hy1, hy2⟩, rfl⟩)
       ((mul_zero y1).symm ▸ zero_mem _)
       (λ r1 r2, (mul_add y1 r1 r2).symm ▸ add_mem _)
-      (λ s r, (i.mul_smul s y1 r).symm ▸ smul_mem _ _))
+      (λ s r, (algebra.mul_smul i s y1 r).symm ▸ smul_mem _ _))
     ((zero_mul x2).symm ▸ zero_mem _)
     (λ r1 r2, (add_mul r1 r2 x2).symm ▸ add_mem _)
     (λ s r, (i.smul_mul s r x2).symm ▸ smul_mem _ _))
@@ -183,19 +183,21 @@ begin
     rw list.forall_mem_cons at HL,
     rcases (ih HL.2) with ⟨z, r, hr, hzr⟩, rw [list.prod_cons, ← hzr],
     rcases HL.1 with ⟨⟨hd, rfl⟩ | hs⟩ | rfl,
-    { exact ⟨hd * z, r, hr, mul_smul _ _ _⟩ },
-    { exact ⟨z, hd * r, is_submonoid.mul_mem (monoid.subset_closure hs) hr, mul_left_comm _ _ _⟩ },
+    { refine ⟨hd * z, r, hr, _⟩, rw [i.smul_def, i.smul_def, i.map_mul, mul_assoc], refl },
+    { refine ⟨z, hd * r, is_submonoid.mul_mem (monoid.subset_closure hs) hr, _⟩,
+      rw [i.smul_def, i.smul_def, mul_left_comm] },
     { refine ⟨-z, r, hr, _⟩, rw [neg_smul, neg_one_mul] } },
   exact span_le.2 (show monoid.closure s ⊆ i.adjoin s, from monoid.closure_subset subset_adjoin)
 end
 
+variables {s t}
 theorem fg_trans (h1 : fg (i.adjoin s).to_submodule)
   (h2 : fg ((algebra.of_subring (i.adjoin s : set A)).adjoin t).to_submodule) :
   fg (i.adjoin (s ∪ t)).to_submodule :=
 begin
   rcases fg_def.1 h1 with ⟨p, hp, hp'⟩,
   rcases fg_def.1 h2 with ⟨q, hq, hq'⟩,
-  refine fg_def.2 ⟨set.image (λ z : i.to_module × i.to_module, z.1 * z.2) (p.prod q),
+  refine fg_def.2 ⟨set.image (λ z : i.mod × i.mod, z.1 * z.2) (p.prod q),
     set.finite_image _ (set.finite_prod hp hq), le_antisymm _ _⟩,
   { rw [span_le, set.image_subset_iff], rintros ⟨x, y⟩ ⟨hx, hy⟩,
     change x * y ∈ _, refine is_submonoid.mul_mem _ _,
@@ -206,7 +208,7 @@ begin
   intros r hr, change r ∈ i.adjoin (s ∪ t) at hr, rw ← adjoin_adjoin at hr,
   change r ∈ ((algebra.of_subring (i.adjoin s : set A)).adjoin t).to_submodule at hr,
   rw [← hq', mem_span_iff_lc] at hr, rcases hr with ⟨l, hlq, rfl⟩,
-  haveI := classical.dec_eq i.to_module,
+  haveI := classical.dec_eq i.mod,
   rw [lc.total_apply, finsupp.sum, mem_coe], refine sum_mem _ _,
   intros z hz, change (l z).1 * _ ∈ _,
   have : (l z).1 ∈ (i.adjoin s).to_submodule := (l z).2,

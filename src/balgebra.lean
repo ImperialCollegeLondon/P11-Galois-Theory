@@ -1,26 +1,27 @@
-import linear_algebra.basic data.polynomial ring_theory.subring
+import linear_algebra.multivariate_polynomial
+import linear_algebra.tensor_product
+import data.polynomial ring_theory.subring
 
 universes u v w
 
 open lattice
 
-structure algebra (R : out_param $ Type u) (A : Type v) [out_param $ comm_ring R] [ring A] :=
+infix ` ⊗ `:100 := tensor_product
+
+structure algebra (R : Type u) (A : Type v) [comm_ring R] [comm_ring A] :=
 (to_fun : R → A) [hom : is_ring_hom to_fun]
-(commutes' : ∀ r s, s * to_fun r = to_fun r * s)
 
 attribute [instance] algebra.hom
 
 namespace algebra
 
-variables (R : Type u) (A : Type v)
-variables [comm_ring R] [ring A]
+variables (R : Type u) (S : Type v) (A : Type w)
+variables [comm_ring R] [comm_ring S] [comm_ring A]
 
 instance : has_coe_to_fun (algebra R A) :=
 ⟨_, to_fun⟩
 
-variables {R A} (i : algebra R A)
-
-theorem commutes (r s) : s * i r = i r * s := i.commutes' r s
+variables {R S A} (i : algebra R A)
 
 @[simp] lemma map_add (r s : R) : i (r + s) = i r + i s :=
 is_ring_hom.map_add _
@@ -40,43 +41,62 @@ is_ring_hom.map_mul _
 @[simp] lemma map_one : i (1 : R) = 1 :=
 is_ring_hom.map_one _
 
-variables {R A}
-def to_module (i : algebra R A) : Type v := A
+def to_module (i : algebra R A) : Type w := A
 
-instance to_module.comm_ring : ring (to_module i) :=
-by dunfold to_module; apply_instance
+namespace to_module
+instance : comm_ring (to_module i) := _inst_3
+instance : add_comm_group (to_module i) := infer_instance
 
-instance to_module.module : module R (to_module i) := module.of_core
+instance : module R (to_module i) := module.of_core
 { smul := λ r x, i r * x,
   smul_add := by intros; simp [mul_add],
   add_smul := by intros; simp [add_mul],
   mul_smul := by intros; simp [mul_assoc],
   one_smul := by intros; simp; exact one_mul x }
 
-instance to_module.vector_space {F : Type u} {K : Type v}
+instance {F : Type u} {K : Type v}
   [discrete_field F] [field K] (i : algebra F K) :
   vector_space F (to_module i) :=
 { .. algebra.to_module.module i }
+end to_module
 
 theorem smul_def {r : R} {x : to_module i} : r • x = i r * x :=
 rfl
 
-@[simp] lemma mul_smul (s : R) (x y : to_module i) :
-  x * (has_scalar.smul.{u v} s y) = has_scalar.smul.{u v} s (x * y) :=
-by rw [smul_def, smul_def, ← mul_assoc, commutes, mul_assoc]
+@[simp] protected lemma mul_smul (s : R) (x y : to_module i) :
+  x * (has_scalar.smul.{u w} s y) = has_scalar.smul.{u w} s (x * y) :=
+mul_left_comm _ _ _
 
 @[simp] lemma smul_mul (r : R) (x y : to_module i) :
-  (r • x) * y = has_scalar.smul.{u v} r (x * y) :=
+  (r • x) * y = has_scalar.smul.{u w} r (x * y) :=
 mul_assoc _ _ _
 
 def polynomial (R : Type u) [comm_ring R] [decidable_eq R] : algebra R (polynomial R) :=
-{ to_fun := polynomial.C,
-  commutes' := λ _ _, mul_comm _ _ }
+{ to_fun := polynomial.C }
+
+def mv_polynomial (R : Type u) [comm_ring R] [decidable_eq R]
+  (ι : Type v) [decidable_eq ι] : algebra R (mv_polynomial ι R) :=
+{ to_fun := mv_polynomial.C }
+
+def of_subring (S : set R) [is_subring S] : algebra S R :=
+{ to_fun := subtype.val,
+  hom := ⟨rfl, λ _ _, rfl, λ _ _, rfl⟩ }
+
+def comap (iRS : algebra R S) (iSA : algebra S A) : algebra R A :=
+{ to_fun := iSA ∘ iRS }
+
+def lmul : i.to_module →ₗ i.to_module →ₗ i.to_module :=
+linear_map.mk₂ ((*) : A → A → A)
+  (λ x y z : A, add_mul x y z)
+  (λ c (x y : A), mul_assoc _ x y)
+  (λ x y z : A, mul_add x y z)
+  (λ c (x y : A), mul_left_comm x _ y)
 
 end algebra
 
 structure alg_hom {R : Type u} {A : Type v} {B : Type w}
-  [comm_ring R] [ring A] [ring B] (iA : algebra R A) (iB : algebra R B) :=
+  [comm_ring R] [comm_ring A] [comm_ring B]
+  (iA : algebra R A) (iB : algebra R B) :=
 (to_fun : A → B) [hom : is_ring_hom to_fun]
 (commutes' : ∀ r : R, to_fun (iA r) = iB r)
 
@@ -85,7 +105,7 @@ infixr ` →ₐ `:25 := alg_hom
 namespace alg_hom
 
 variables {R : Type u} {A : Type v} {B : Type w}
-variables [comm_ring R] [ring A] [ring B]
+variables [comm_ring R] [comm_ring A] [comm_ring B]
 variables (iA : algebra R A) (iB : algebra R B)
 include R
 
@@ -152,20 +172,49 @@ end
 
 end polynomial
 
+namespace mv_polynomial
+
+variables (R : Type u) (A : Type v)
+variables [comm_ring R] [comm_ring A] (i : algebra R A)
+variables [decidable_eq R] [decidable_eq A] (σ : set A)
+
+def aeval : (algebra.mv_polynomial R σ) →ₐ i :=
+{ to_fun := eval₂ i subtype.val,
+  hom := ⟨eval₂_one _ _, λ _ _, eval₂_mul _ _, λ _ _, eval₂_add _ _⟩,
+  commutes' := λ r, eval₂_C _ _ _ }
+
+theorem aeval_def (p : mv_polynomial σ R) : aeval R A i σ p = eval₂ i subtype.val p :=
+rfl
+
+instance aeval.is_ring_hom : is_ring_hom (aeval R A i σ) :=
+alg_hom.hom _
+
+variables (ι : Type w) [decidable_eq ι]
+
+theorem eval_unique (φ : algebra.mv_polynomial R ι →ₐ i) (p) :
+  φ p = eval₂ i (φ ∘ X) p :=
+begin
+  apply mv_polynomial.induction_on p,
+  { intro r, rw eval₂_C, exact φ.commutes r },
+  { intros f g ih1 ih2,
+    rw [is_ring_hom.map_add φ, ih1, ih2, eval₂_add] },
+  { intros p j ih,
+    rw [is_ring_hom.map_mul φ, eval₂_mul, eval₂_X, ih] }
+end
+
+end mv_polynomial
+
 section
 
-variables (R : Type*) [ring R]
+variables (R : Type*) [comm_ring R]
 
 def ring.to_ℤ_algebra : algebra ℤ R :=
 { to_fun := coe,
-  hom := by constructor; intros; simp,
-  commutes' := λ n r, int.induction_on n (by simp)
-    (λ i ih, by simp [mul_add, add_mul, ih])
-    (λ i ih, by simp [mul_add, add_mul, ih]), }
+  hom := by constructor; intros; simp }
 
 def is_ring_hom.to_ℤ_alg_hom
-  (R : Type u) [ring R] (iR : algebra ℤ R)
-  (S : Type v) [ring S] (iS : algebra ℤ S)
+  (R : Type u) [comm_ring R] (iR : algebra ℤ R)
+  (S : Type v) [comm_ring S] (iS : algebra ℤ S)
   (f : R → S) [is_ring_hom f] : iR →ₐ iS :=
 { to_fun := f, hom := by apply_instance,
   commutes' := λ i, int.induction_on i (by rw [iR.map_zero, iS.map_zero, is_ring_hom.map_zero f])
@@ -183,7 +232,7 @@ instance int.cast_hom : is_ring_hom (coe : ℤ → R) :=
 end
 
 structure subalgebra {R : Type u} {A : Type v}
-  [comm_ring R] [ring A] (i : algebra R A) : Type v :=
+  [comm_ring R] [comm_ring A] (i : algebra R A) : Type v :=
 (carrier : set A) [subring : is_subring carrier]
 (range_le : set.range i ≤ carrier)
 
@@ -192,13 +241,10 @@ attribute [instance] subalgebra.subring
 namespace subalgebra
 
 variables {R : Type u} {A : Type v}
-variables [comm_ring R] [ring A] (i : algebra R A)
+variables [comm_ring R] [comm_ring A] (i : algebra R A)
 
 instance : has_coe (subalgebra i) (set A) :=
 ⟨λ S, S.carrier⟩
-
-instance : has_coe_to_sort (subalgebra i) :=
-by apply_instance
 
 instance : has_mem A (subalgebra i) :=
 ⟨λ x S, x ∈ S.carrier⟩
@@ -216,13 +262,12 @@ variables (S : subalgebra i)
 
 instance : is_subring (S : set A) := S.subring
 
-instance : ring S := @@subtype.ring _ S.is_subring
+instance : comm_ring S := @@subtype.comm_ring _ S.is_subring
 
-def algebra : algebra R S :=
+protected def algebra : algebra R S :=
 { to_fun := λ r, ⟨i r, S.range_le ⟨r, rfl⟩⟩,
   hom := ⟨subtype.eq i.map_one, λ x y, subtype.eq $ i.map_mul x y,
-    λ x y, subtype.eq $ i.map_add x y⟩,
-  commutes' := λ r s, subtype.eq $ i.commutes r s }
+    λ x y, subtype.eq $ i.map_add x y⟩ }
 
 def val : S.algebra →ₐ i :=
 { to_fun := subtype.val,
@@ -235,18 +280,33 @@ def to_submodule : submodule R i.to_module :=
   add := λ x y hx hy, (⟨x, hx⟩ + ⟨y, hy⟩ : S).2,
   smul := λ c x hx, (⟨i c, S.range_le ⟨c, rfl⟩⟩ * ⟨x, hx⟩:S).2 }
 
+instance to_submodule.is_subring : is_subring (S.to_submodule : set i.to_module) := S.2
+
 instance : partial_order (subalgebra i) :=
 { le := λ S T, S.carrier ≤ T.carrier,
   le_refl := λ _, le_refl _,
   le_trans := λ _ _ _, le_trans,
   le_antisymm := λ S T hst hts, ext $ λ x, ⟨@hst x, @hts x⟩ }
 
+def comap {R : Type u} {S : Type v} {A : Type w}
+  [comm_ring R] [comm_ring S] [comm_ring A]
+  (iRS : algebra R S) {iSA : algebra S A}
+  (iSB : subalgebra iSA) : subalgebra (iRS.comap iSA) :=
+{ carrier := iSB,
+  range_le := λ a ⟨r, hr⟩, hr ▸ iSB.range_le ⟨_, rfl⟩ }
+
+def under {R : Type u} {A : Type v} [comm_ring R] [comm_ring A]
+  {i : algebra R A} (S : subalgebra i)
+  (T : subalgebra (algebra.of_subring (S : set A))) : subalgebra i :=
+{ carrier := T,
+  range_le := λ a ⟨r, hr⟩, hr ▸ T.range_le ⟨⟨i r, S.range_le ⟨r, rfl⟩⟩, rfl⟩ }
+
 end subalgebra
 
 namespace alg_hom
 
 variables {R : Type u} {A : Type v} {B : Type w}
-variables [comm_ring R] [ring A] [ring B]
+variables [comm_ring R] [comm_ring A] [comm_ring B]
 variables {iA : algebra R A} {iB : algebra R B}
 variables (φ : iA →ₐ iB)
 
@@ -262,11 +322,11 @@ end alg_hom
 namespace algebra
 
 variables {R : Type u} {A : Type v}
-variables [comm_ring R] [ring A] (i : algebra R A)
+variables [comm_ring R] [comm_ring A] (i : algebra R A)
 
 variables (R)
 protected def id : algebra R R :=
-{ to_fun := id, commutes' := λ _ _, mul_comm _ _ }
+{ to_fun := id }
 variables {R}
 
 def of_id : algebra.id R →ₐ i :=

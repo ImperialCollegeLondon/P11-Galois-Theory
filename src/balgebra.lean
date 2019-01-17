@@ -79,7 +79,7 @@ instance : add_comm_group (mod i) := infer_instance
 instance : module R (mod i) := i.to_module
 
 instance {F : Type u} {K : Type v}
-  [discrete_field F] [field K] (i : algebra F K) :
+  [discrete_field F] [comm_ring K] (i : algebra F K) :
   vector_space F (mod i) :=
 { .. algebra.mod.module i }
 end mod

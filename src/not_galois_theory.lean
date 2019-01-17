@@ -1,5 +1,6 @@
 import algebra.field
 import field_theory.subfield
+import ring_theory.principal_ideal_domain
 import data.polynomial
 
 local attribute [instance, priority 0] classical.prop_decidable
@@ -97,10 +98,24 @@ begin
     apply @int_to_subfield _ _ _ _ HJ }
 end
 
-def int_cast_ker := is_add_group_hom.ker (@int.cast L _ _ _ _)
+def int_cast_ker_set := is_add_group_hom.ker (@int.cast L _ _ _ _)
 
-theorem int_cast_ker_singleton [char_zero L] : @int_cast_ker L _ = {0} :=
-by ext; simp [int_cast_ker, is_add_group_hom.mem_ker]; exact int.cast_eq_zero
+def int_cast_ker : ideal ℤ :=
+{ carrier := @int_cast_ker_set L _,
+  zero := (is_add_group_hom.mem_ker int.cast).mpr int.cast_zero,
+  add := λ x y hx hy,
+    (is_add_group_hom.mem_ker int.cast).mpr (eq.trans (int.cast_add _ _) 
+      (by rw [
+        (is_add_group_hom.mem_ker int.cast).mp hx, 
+        (is_add_group_hom.mem_ker int.cast).mp hy, zero_add] 
+      : int.cast x + int.cast y = _)),
+  smul := λ c x hx, by 
+  { have hx' : ↑x = (0 : L) := (is_add_group_hom.mem_ker int.cast).mp hx,
+    apply (is_add_group_hom.mem_ker int.cast).mpr,
+    rw [smul_eq_mul, int_cast_eq_coe, int.cast_mul, hx', mul_zero] } }
+
+theorem int_cast_ker_singleton [char_zero L] : @int_cast_ker_set L _ = {0} :=
+by ext; simp [int_cast_ker_set, is_add_group_hom.mem_ker]; exact int.cast_eq_zero
 
 theorem int_cast_ker_not_singleton (hn : ¬ injective (@int.cast L _ _ _ _)) 
 : ∃ (n : ℤ), n ≠ 0 ∧ ↑ n = (0 : L) :=
@@ -111,7 +126,18 @@ begin
   rw [←sub_eq_zero], exact hs _ hab,
 end
 
-private lemma int_cast_ker_has_multiples (hn : ¬ injective (@int.cast L _ _ _ _))
+theorem int_cast_ker'_principal : (@int_cast_ker L _).is_principal 
+:= principal_ideal_domain.principal _
+
+
+
+/-
+theorem int_cast_ker_is_multiples (hn : ¬ injective (@int.cast L _ _ _ _))
+: ∃ n : ℤ, n ≠ 0 ∧ (∀ m : ℤ, (↑m = (0 : L) ↔ (∃ k : ℤ, m = k * n))) := 
+begin
+  sorry
+end
+lemma int_cast_ker_has_multiples (hn : ¬ injective (@int.cast L _ _ _ _))
 : ∃ n : ℤ, n ≠ 0 ∧ ∀ k : ℤ, ↑(k * n) = (0 : L) :=
 begin
   let n := classical.some (int_cast_ker_not_singleton hn),
@@ -120,12 +146,4 @@ begin
   existsi n, exact ⟨hn.1, λ k, by rw [int.cast_mul, hn.2, mul_zero]⟩,
 end
 
-theorem int_cast_ker_is_multiples (hn : ¬ injective (@int.cast L _ _ _ _))
-: ∃ n : ℤ, n ≠ 0 ∧ (∀ m : ℤ, (↑m = (0 : L) ↔ (∃ k : ℤ, m = k * n))) := sorry
-
-
-
-#check is_add_group_hom.mem_ker
-#check ideal
-#check int.cast_injective 
-
+-/

@@ -1,11 +1,13 @@
 -- minimal polynomial
 
-import .balgebra ring_theory.principal_ideal_domain ring_theory.ideal_operations
+import .integral_closure
+import ring_theory.principal_ideal_domain
+import ring_theory.ideal_operations
 
 universes u v
 
 variables (F : Type u) {K : Type v}
-variables [discrete_field F] [field K]
+variables [discrete_field F] [discrete_field K]
 
 theorem is_ring_hom.inj (φ : F → K) [is_ring_hom φ] : function.injective φ :=
 λ x y hφ, eq_of_sub_eq_zero $ by_contradiction $ λ hxy,
@@ -23,6 +25,11 @@ open polynomial
 
 def is_algebraic (x : K) : Prop :=
 ∃ p : polynomial F, p ≠ 0 ∧ aeval F i x p = 0
+
+theorem is_integral_of_algebraic {x : K} (p : polynomial F)
+  (hp1 : p ≠ 0) (hp2 : aeval F i x p = 0) : is_integral i x :=
+⟨p * C (leading_coeff p)⁻¹, monic_mul_leading_coeff_inv hp1,
+by rw [alg_hom.map_mul, hp2, zero_mul]⟩
 
 noncomputable def irr_aux (x : K) : polynomial F :=
 @@ideal.is_principal.generator _

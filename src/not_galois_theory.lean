@@ -7,11 +7,7 @@ local attribute [instance, priority 0] classical.prop_decidable
 
 open function
 
-<<<<<<< HEAD
 variables {K L ι : Type} [discrete_field K] [discrete_field L] (f : K → L) (homf : is_field_hom f)
-=======
-variables {K L ι : Type} [discrete_field K] [discrete_field L] (f : K → L) 
->>>>>>> 7b845790dad8f7e32dae1b9e7a547b9bce1d5d48
 
 def subfields : set (set L) := {K' : set L | is_subfield K'}
 

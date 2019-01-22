@@ -7,13 +7,17 @@ local attribute [instance, priority 0] classical.prop_decidable
 
 open function
 
+<<<<<<< HEAD
 variables {K L ι : Type} [discrete_field K] [discrete_field L] (f : K → L) (homf : is_field_hom f)
+=======
+variables {K L ι : Type} [discrete_field K] [discrete_field L] (f : K → L) 
+>>>>>>> 7b845790dad8f7e32dae1b9e7a547b9bce1d5d48
 
 def subfields : set (set L) := {K' : set L | is_subfield K'}
 
 def prime_subfield := set.sInter (@subfields L _)
 
-theorem field_intersect_two (F1 F2 : set K) [h1 : is_subfield F1] [h2 : is_subfield F2] : is_subfield (F1 ∩ F2) := 
+theorem is_subfield_inter (F1 F2 : set K) [h1 : is_subfield F1] [h2 : is_subfield F2] : is_subfield (F1 ∩ F2) := 
 {   zero_mem := and.intro h1.zero_mem h2.zero_mem,
     one_mem := and.intro h1.one_mem h2.one_mem,
     add_mem := λ a b ⟨ha1, ha2⟩ ⟨hb1, hb2⟩, and.intro (is_add_submonoid.add_mem ha1 hb1) (is_add_submonoid.add_mem ha2 hb2),
@@ -21,7 +25,7 @@ theorem field_intersect_two (F1 F2 : set K) [h1 : is_subfield F1] [h2 : is_subfi
     neg_mem := λ a ⟨ha1, ha2⟩, and.intro (is_add_subgroup.neg_mem ha1) (is_add_subgroup.neg_mem ha2),
     inv_mem := λ x ⟨hx1, hx2⟩, and.intro (is_subfield.inv_mem hx1) (is_subfield.inv_mem hx2) }
 
-theorem field_intersect (Fi : ι → set K) [hi : ∀ i, is_subfield (Fi i)] : is_subfield (set.Inter Fi) := 
+theorem is_subfield_Inter (Fi : ι → set K) [hi : ∀ i, is_subfield (Fi i)] : is_subfield (set.Inter Fi) := 
 {   zero_mem := by { simp, exact λ i, (hi i).zero_mem },
     one_mem := by { simp, exact λ i, (hi i).one_mem },
     add_mem := by { simp, exact λ a b ha hb i, is_add_submonoid.add_mem (ha i) (hb i) },

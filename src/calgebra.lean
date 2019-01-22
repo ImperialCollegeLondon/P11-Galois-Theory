@@ -1,4 +1,4 @@
-import .cmodule data.polynomial
+/-import .cmodule data.polynomial
 import category_theory.examples.rings
 import category_theory.comma
 import category_theory.punit
@@ -109,4 +109,4 @@ noncomputable def polynomial : CommRing.{u} ⥤ CommRing.{u} :=
 
 end Ring
 
-end category_theory.examples
+end category_theory.examples-/

@@ -159,7 +159,7 @@ def is_integral (x : A) : Prop :=
 ∃ p : polynomial R, monic p ∧ aeval R i x p = 0
 
 theorem is_integral_i (x) : is_integral i (i x) :=
-⟨X - C x, monic_X_sub_C' _,
+⟨X - C x, monic_X_sub_C _,
 by rw [alg_hom.map_sub, aeval_def, aeval_def, eval₂_X, eval₂_C, sub_self]⟩
 
 theorem is_integral_of_subring {x} (T : set R) [is_subring T]
@@ -256,7 +256,7 @@ begin
       change _ = _ * _,
       rw is_semiring_hom.map_pow subtype.val, refl,
       split; intros; refl },
-    all_goals { intros; refl } },
+    constructor; intros; refl },
   refine is_integral_of_noetherian' _ H ⟨x, hx⟩
 end
 

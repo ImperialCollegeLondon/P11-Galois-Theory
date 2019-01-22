@@ -20,9 +20,6 @@ variables {R : Type u} {A : Type v}
 variables [comm_ring R] [comm_ring A]
 variables {i : algebra R A} {s t : set A}
 
-theorem closure_mono {s t : set R} (H : s ⊆ t) : closure s ⊆ closure t :=
-closure_subset $ set.subset.trans H subset_closure
-
 theorem subset_adjoin : s ⊆ i.adjoin s :=
 set.subset.trans (set.subset_union_right _ _) subset_closure
 
@@ -129,43 +126,6 @@ add_group.in_closure.rec_on h
     | _, _, ⟨L1, h1, rfl⟩, ⟨L2, h2, rfl⟩ := ⟨L1 ++ L2, list.forall_mem_append.2 ⟨h1, h2⟩,
       by rw [list.map_append, list.sum_append]⟩
     end)
-
-variables {s}
-@[elab_as_eliminator]
-protected theorem in_closure.rec_on {C : A → Prop} {x : A} (hx : x ∈ closure s)
-  (h1 : C 1) (hneg1 : C (-1)) (hs : ∀ z ∈ s, ∀ n, C n → C (z * n))
-  (ha : ∀ {x y}, C x → C y → C (x + y)) : C x :=
-begin
-  have h0 : C 0 := add_neg_self (1:A) ▸ ha h1 hneg1,
-  rcases exists_list_of_mem_closure' hx with ⟨L, HL, rfl⟩, clear hx,
-  induction L with hd tl ih, { exact h0 },
-  rw list.forall_mem_cons at HL,
-  suffices : C (list.prod hd),
-  { rw [list.map_cons, list.sum_cons],
-    exact ha this (ih HL.2) },
-  replace HL := HL.1, clear ih tl,
-  suffices : ∃ L : list A, (∀ x ∈ L, x ∈ s) ∧ (list.prod hd = list.prod L ∨ list.prod hd = -list.prod L),
-  { rcases this with ⟨L, HL', HP | HP⟩,
-    { rw HP, clear HP HL hd, induction L with hd tl ih, { exact h1 },
-      rw list.forall_mem_cons at HL',
-      rw list.prod_cons,
-      exact hs _ HL'.1 _ (ih HL'.2) },
-    rw HP, clear HP HL hd, induction L with hd tl ih, { exact hneg1 },
-    rw [list.prod_cons, neg_mul_eq_mul_neg],
-    rw list.forall_mem_cons at HL',
-    exact hs _ HL'.1 _ (ih HL'.2) },
-  induction hd with hd tl ih,
-  { exact ⟨[], list.forall_mem_nil _, or.inl rfl⟩ },
-  rw list.forall_mem_cons at HL,
-  rcases ih HL.2 with ⟨L, HL', HP | HP⟩; cases HL.1 with hhd hhd,
-  { exact ⟨hd :: L, list.forall_mem_cons.2 ⟨hhd, HL'⟩, or.inl $
-      by rw [list.prod_cons, list.prod_cons, HP]⟩ },
-  { exact ⟨L, HL', or.inr $ by rw [list.prod_cons, hhd, neg_one_mul, HP]⟩ },
-  { exact ⟨hd :: L, list.forall_mem_cons.2 ⟨hhd, HL'⟩, or.inr $
-      by rw [list.prod_cons, list.prod_cons, HP, neg_mul_eq_mul_neg]⟩ },
-  { exact ⟨L, HL', or.inl $ by rw [list.prod_cons, hhd, HP, neg_one_mul, _root_.neg_neg]⟩ }
-end
-variables (s)
 
 theorem madjoin_eq_span : (i.adjoin s).to_submodule = span (monoid.closure s) :=
 begin

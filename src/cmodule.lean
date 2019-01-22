@@ -13,7 +13,7 @@ open category_theory category_theory.examples
 
 namespace CommRing
 
-def int : CommRing := { α := ℤ }
+def int : CommRing := { α := ℤ, str := int.comm_ring }
 
 end CommRing
 

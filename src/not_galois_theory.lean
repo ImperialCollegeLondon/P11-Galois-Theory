@@ -7,10 +7,7 @@ local attribute [instance, priority 0] classical.prop_decidable
 
 open function
 
-variables {K L ι : Type} [discrete_field K] [discrete_field L] (f : K → L) 
-
-theorem inj_field_hom (homf : is_field_hom f) : injective f := λ a b hf, 
-by { rwa [←sub_eq_zero, ←is_ring_hom.map_sub f, is_field_hom.map_eq_zero f, sub_eq_zero] at hf }
+variables {K L ι : Type} [discrete_field K] [discrete_field L] (f : K → L) (homf : is_field_hom f)
 
 def subfields : set (set L) := {K' : set L | is_subfield K'}
 
@@ -129,8 +126,6 @@ end
 theorem int_cast_ker'_principal : (@int_cast_ker L _).is_principal 
 := principal_ideal_domain.principal _
 
-
-
 /-
 theorem int_cast_ker_is_multiples (hn : ¬ injective (@int.cast L _ _ _ _))
 : ∃ n : ℤ, n ≠ 0 ∧ (∀ m : ℤ, (↑m = (0 : L) ↔ (∃ k : ℤ, m = k * n))) := 
@@ -147,3 +142,12 @@ begin
 end
 
 -/
+
+include homf
+
+theorem inj_field_hom : injective f := λ a b hf, 
+by { rwa [←sub_eq_zero, ←is_ring_hom.map_sub f, is_field_hom.map_eq_zero f, sub_eq_zero] at hf }
+
+def algebraic (a : L) := ∃ p : polynomial K, polynomial.eval₂ f a p = 0
+def transcendental (a : L) := ¬ (algebraic _ homf a)
+

@@ -63,9 +63,6 @@ letI : module (polynomial F) (polynomial F) := ring.to_module;
 exact lattice.eq_bot_iff.2 (λ p hp, submodule.mem_bot.2 $ by_contradiction $ λ hnp,
 hx ⟨p, hnp, or.resolve_right hp (set.not_mem_empty _)⟩)
 
--- TODO : https://github.com/leanprover/mathlib/pull/514
-lemma is_unit_iff_degree_eq_zero {p : polynomial F} : is_unit p ↔ degree p = 0 := sorry
-
 theorem irr_dvd_iff (x : K) (p : polynomial F) :
   irr i x ∣ p ↔ aeval F i x p = 0 :=
 begin

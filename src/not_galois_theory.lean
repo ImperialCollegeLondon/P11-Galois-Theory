@@ -145,9 +145,6 @@ end
 
 include homf
 
-theorem inj_field_hom : injective f := λ a b hf, 
-by { rwa [←sub_eq_zero, ←is_ring_hom.map_sub f, is_field_hom.map_eq_zero f, sub_eq_zero] at hf }
-
 def algebraic (a : L) := ∃ p : polynomial K, polynomial.eval₂ f a p = 0
 def transcendental (a : L) := ¬ (algebraic _ homf a)
 

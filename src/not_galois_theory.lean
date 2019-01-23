@@ -29,7 +29,7 @@ theorem is_subfield_Inter (Fi : ι → set K) [hi : ∀ i, is_subfield (Fi i)] :
     neg_mem := by { simp, exact λ a h i, is_add_subgroup.neg_mem (h i) },
     inv_mem := by { simp, exact λ a h i, is_subfield.inv_mem (h i) } }
 
-theorem field_intersect' (PL : set (set L)) [H : ∀ J ∈ PL, is_subfield J] : is_subfield (set.sInter PL) :=
+theorem is_subfield_sInter (PL : set (set L)) [H : ∀ J ∈ PL, is_subfield J] : is_subfield (set.sInter PL) :=
 {   zero_mem := λ J HJ, (H J HJ).zero_mem,
     one_mem := λ J HJ, (H J HJ).one_mem,
     add_mem := λ a b ha hb J HJ, let X := (H J HJ).add_mem in X (ha J HJ) (hb J HJ),
@@ -40,7 +40,7 @@ theorem field_intersect' (PL : set (set L)) [H : ∀ J ∈ PL, is_subfield J] : 
 instance subfields_are_subfields : ∀ J ∈ @subfields L _, is_subfield J := by simp [subfields]
 
 instance prime_subfield_is_subfield : is_subfield (@prime_subfield L _) := 
-@field_intersect' _ _ subfields subfields_are_subfields
+@is_subfield_sInter _ _ subfields subfields_are_subfields
 
 theorem rat_cast_hom [char_zero L] : is_field_hom (@rat.cast L _) :=
 ⟨rat.cast_one, rat.cast_mul, rat.cast_add⟩

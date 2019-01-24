@@ -36,7 +36,6 @@ namespace algebra
 
 variables {R : Type u} {S : Type v} {A : Type w}
 variables [comm_ring R] [comm_ring S] [ring A] [algebra R A]
-include R
 
 /-- The codomain of an algebra. -/
 instance : module R A := infer_instance
@@ -45,6 +44,8 @@ instance : has_scalar R A := infer_instance
 instance {F : Type u} {K : Type v} [discrete_field F] [ring K] [algebra F K] :
   vector_space F K :=
 @vector_space.mk F _ _ _ algebra.module
+
+include R
 
 instance : is_ring_hom (algebra_map A : R → A) := algebra.hom _ A
 

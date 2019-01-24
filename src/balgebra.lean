@@ -8,21 +8,6 @@ open lattice
 
 infix ` ⊗ `:100 := tensor_product
 
-theorem mv_polynomial.C_mul' (R : Type u) [comm_ring R] [decidable_eq R]
-  (ι : Type v) [decidable_eq ι] (c : R) (p : mv_polynomial ι R) :
-  mv_polynomial.C c * p = c • p :=
-begin
-  apply finsupp.induction p,
-  { exact (mul_zero $ mv_polynomial.C c).trans (@smul_zero R (mv_polynomial ι R) _ _ _ c).symm },
-  intros a b f haf hb0 ih,
-  rw [mul_add, ih, @smul_add R (mv_polynomial ι R) _ _ _ c], congr' 1,
-  rw [finsupp.mul_def, finsupp.smul_single, mv_polynomial.C, mv_polynomial.monomial],
-  rw [finsupp.sum_single_index, finsupp.sum_single_index, zero_add, smul_eq_mul],
-  { rw [mul_zero, finsupp.single_zero] },
-  { rw finsupp.sum_single_index,
-    all_goals { rw [zero_mul, finsupp.single_zero] } }
-end
-
 structure algebra.core (R : Type u) (A : Type v) [comm_ring R] [comm_ring A] :=
 (to_fun : R → A) [hom : is_ring_hom to_fun]
 
@@ -103,7 +88,7 @@ def polynomial (R : Type u) [comm_ring R] [decidable_eq R] : algebra R (polynomi
 def mv_polynomial (R : Type u) [comm_ring R] [decidable_eq R]
   (ι : Type v) [decidable_eq ι] : algebra R (mv_polynomial ι R) :=
 { to_fun := mv_polynomial.C,
-  smul_def' := λ c p, (mv_polynomial.C_mul' R ι c p).symm,
+  smul_def' := λ c p, (mv_polynomial.C_mul' c p).symm,
   .. mv_polynomial.module }
 
 def of_subring (S : set R) [is_subring S] : algebra S R :=

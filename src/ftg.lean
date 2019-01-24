@@ -2,7 +2,7 @@ import .algebra data.fintype linear_algebra.dimension
 
 universes u v w
 
-variables (K : Type u) (L : Type v) [discrete_field K] [field L]
+variables (K : Type u) (L : Type v) [discrete_field K] [discrete_field L]
 
 class finite_Galois_extension extends algebra K L.
 

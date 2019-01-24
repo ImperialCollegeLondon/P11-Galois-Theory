@@ -49,11 +49,9 @@ include R
 
 instance : is_ring_hom (algebra_map A : R → A) := algebra.hom _ A
 
+variables (A)
 @[simp] lemma map_add (r s : R) : algebra_map A (r + s) = algebra_map A r + algebra_map A s :=
 is_ring_hom.map_add _
-
-@[simp] lemma map_zero : algebra_map A (0 : R) = 0 :=
-is_ring_hom.map_zero _
 
 @[simp] lemma map_neg (r : R) : algebra_map A (-r) = -algebra_map A r :=
 is_ring_hom.map_neg _
@@ -64,8 +62,13 @@ is_ring_hom.map_sub _
 @[simp] lemma map_mul (r s : R) : algebra_map A (r * s) = algebra_map A r * algebra_map A s :=
 is_ring_hom.map_mul _
 
+variables (R)
+@[simp] lemma map_zero : algebra_map A (0 : R) = 0 :=
+is_ring_hom.map_zero _
+
 @[simp] lemma map_one : algebra_map A (1 : R) = 1 :=
 is_ring_hom.map_one _
+variables {R A}
 
 /-- Creating an algebra from a morphism in CRing. -/
 def of_ring_hom (i : R → S) (hom : is_ring_hom i) : algebra R S :=
@@ -228,15 +231,20 @@ namespace algebra
 variables (R : Type u) (S : Type v) (A : Type w)
 variables [comm_ring R] [comm_ring S] [ring A] [algebra R S] [algebra S A]
 include R S A
-
 def comap : Type w := A
+def comap.to_comap : A → comap R S A := id
+def comap.of_comap : comap R S A → A := id
+omit R S A
+
 instance comap.ring : ring (comap R S A) := _inst_3
---instance comap.algebra : algebra S (comap S A) := _inst_5
+instance comap.comm_ring (R : Type u) (S : Type v) (A : Type w)
+  [comm_ring R] [comm_ring S] [comm_ring A] [algebra R S] [algebra S A] :
+  comm_ring (comap R S A) := _inst_8
 instance comap.module : module S (comap R S A) := _inst_5.to_module
 instance comap.has_scalar : has_scalar S (comap R S A) := _inst_5.to_module.to_has_scalar
 
 /-- R ⟶ S induces S-Alg ⥤ R-Alg -/
-instance : algebra R (comap R S A) :=
+instance comap.algebra : algebra R (comap R S A) :=
 { smul := λ r x, (algebra_map S r • x : A),
   smul_add := λ _ _ _, smul_add _ _ _,
   add_smul := λ _ _ _, by simp only [algebra.map_add]; from add_smul _ _ _,
@@ -404,8 +412,8 @@ instance algebra : algebra R S :=
   zero_smul := λ x, subtype.eq $ by apply _inst_3.1.1.6,
   smul_zero := λ x, subtype.eq $ by apply _inst_3.1.1.7,
   to_fun := λ r, ⟨algebra_map A r, S.range_le ⟨r, rfl⟩⟩,
-  hom := ⟨subtype.eq algebra.map_one, λ x y, subtype.eq $ algebra.map_mul x y,
-    λ x y, subtype.eq $ algebra.map_add x y⟩,
+  hom := ⟨subtype.eq $ algebra.map_one R A, λ x y, subtype.eq $ algebra.map_mul A x y,
+    λ x y, subtype.eq $ algebra.map_add A x y⟩,
   commutes' := λ c x, subtype.eq $ by apply _inst_3.4,
   smul_def' := λ c x, subtype.eq $ by apply _inst_3.5 }
 
@@ -478,19 +486,20 @@ variables {R}
 
 theorem of_id_apply (r) : of_id R A r = algebra_map A r := rfl
 
-variables {A}
+variables (R) {A}
 def adjoin (s : set A) : subalgebra R A :=
 { carrier := ring.closure (set.range (algebra_map A : R → A) ∪ s),
   range_le := le_trans (set.subset_union_left _ _) ring.subset_closure }
+variables {R}
 
-protected def gc : galois_connection (adjoin : set A → subalgebra R A) coe :=
+protected def gc : galois_connection (adjoin R : set A → subalgebra R A) coe :=
 λ s S, ⟨λ H, le_trans (le_trans (set.subset_union_right _ _) ring.subset_closure) H,
 λ H, ring.closure_subset $ set.union_subset S.range_le H⟩
 
-protected def gi : galois_insertion (adjoin : set A → subalgebra R A) coe :=
-{ choice := λ s hs, adjoin s,
+protected def gi : galois_insertion (adjoin R : set A → subalgebra R A) coe :=
+{ choice := λ s hs, adjoin R s,
   gc := algebra.gc,
-  le_l_u := λ S, (algebra.gc (S : set A) (adjoin S)).1 $ le_refl _,
+  le_l_u := λ S, (algebra.gc (S : set A) (adjoin R S)).1 $ le_refl _,
   choice_eq := λ _ _, rfl }
 
 instance : complete_lattice (subalgebra R A) :=

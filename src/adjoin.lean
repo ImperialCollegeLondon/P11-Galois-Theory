@@ -6,9 +6,8 @@ Authors: Kenny Lau
 Adjoining elements to a subring.
 -/
 
-import .algebra
+import ring_theory.algebra
 import ring_theory.noetherian
-import ring_theory.subring
 
 universes u v
 
@@ -59,7 +58,7 @@ theorem mul_le : S1 * S2 ≤ T ↔ ∀ (s1 ∈ S1) (s2 ∈ S2), s1 * s2 ∈ T :=
   {r : A} {C : A → Prop} (hr : r ∈ S1 * S2)
   (hm : ∀ (s1 ∈ S1) (s2 ∈ S2), C (s1 * s2))
   (h0 : C 0) (ha : ∀ x y, C x → C y → C (x + y))
-  (hs : ∀ r x, C x → C (has_scalar.smul.{u v} r x)) : C r :=
+  (hs : ∀ (r : R) x, C x → C (has_scalar.smul.{u v} r x)) : C r :=
 (@mul_le _ _ _ _ _ _ _ ⟨C, h0, ha, hs⟩).2 hm hr
 
 theorem madjoin_union : (algebra.adjoin R (s ∪ t)).to_submodule =
@@ -80,7 +79,7 @@ begin
         rw [mul_assoc, mul_left_comm q1, ← mul_assoc],
         exact ⟨p1 * p2, subalgebra.mem_coe.1 (is_submonoid.mul_mem hp1 hp2), q1 * q2, subalgebra.mem_coe.1 (is_submonoid.mul_mem hq1 hq2), rfl⟩ } },
     { rw mem_coe, exact zero_mem _ },
-    { intros r hr ih, rw ← @neg_one_smul R, rw mem_coe at ih ⊢, exact smul_mem _ _ ih },
+    { intros r hr ih, rw mem_coe at ih ⊢, exact neg_mem _ ih },
     { intros p q hp hq ihp ihq, rw mem_coe, exact add_mem _ ihp ihq } },
   { refine mul_le.2 (λ s1 hs1 s2 hs2, subalgebra.mem_coe.1 _),
     exact is_submonoid.mul_mem (adjoin_mono (set.subset_union_left _ _) hs1)
@@ -89,7 +88,7 @@ end
 
 variables R
 theorem span_mul_span (s1 s2 : set A) :
-  (span s1 * span s2 : submodule R A) = span ((s1.prod s2).image (λ p, p.1 * p.2)) :=
+  (span R s1 * span R s2 : submodule R A) = span R ((s1.prod s2).image (λ p, p.1 * p.2)) :=
 le_antisymm
   (mul_le.2 $ λ x1 hx1 x2 hx2, span_induction hx1
     (λ y1 hy1, span_induction hx2
@@ -110,7 +109,7 @@ fg_def.2 ⟨(s1.prod s2).image (λ p, p.1 * p.2),
 set.finite_image _ (set.finite_prod hf1 hf2),
 span_mul_span R s1 s2 ▸ hs1 ▸ hs2 ▸ rfl⟩
 
-theorem madjoin_eq_span : (algebra.adjoin R s).to_submodule = span (monoid.closure s) :=
+theorem madjoin_eq_span : (algebra.adjoin R s).to_submodule = span R (monoid.closure s) :=
 begin
   apply le_antisymm,
   { intros r hr, rcases ring.exists_list_of_mem_closure hr with ⟨L, HL, rfl⟩, clear hr,
@@ -122,7 +121,7 @@ begin
     suffices : ∃ z r (hr : r ∈ monoid.closure s), has_scalar.smul.{u v} z r = list.prod hd,
     { rcases this with ⟨z, r, hr, hzr⟩, rw ← hzr,
       exact smul_mem _ _ (subset_span hr) },
-    induction hd with hd tl ih, { exact ⟨1, 1, is_submonoid.one_mem _, one_smul _⟩ },
+    induction hd with hd tl ih, { exact ⟨1, 1, is_submonoid.one_mem _, one_smul _ _⟩ },
     rw list.forall_mem_cons at HL,
     rcases (ih HL.2) with ⟨z, r, hr, hzr⟩, rw [list.prod_cons, ← hzr],
     rcases HL.1 with ⟨⟨hd, rfl⟩ | hs⟩ | rfl,

@@ -42,7 +42,7 @@ variables {F}
 theorem irr_aux_ne_zero_of_algebraic {x : K} (hx : is_algebraic F x) : irr_aux F x ≠ 0 :=
 λ hi, let ⟨p, hp1, hp2⟩ := hx in
 by letI : module (polynomial F) (polynomial F) := ring.to_module; exact
-hp1 (submodule.mem_bot.1 $ lattice.eq_bot_iff.1 ((ideal.is_principal.eq_bot_iff_generator_eq_zero _).2 hi) (or.inl hp2))
+hp1 ((submodule.mem_bot F).1 $ lattice.eq_bot_iff.1 ((ideal.is_principal.eq_bot_iff_generator_eq_zero _).2 hi) (or.inl hp2))
 
 theorem monic_irr_of_algebraic {x : K} (hx : is_algebraic F x) : monic (irr F x) :=
 monic_mul_leading_coeff_inv $ irr_aux_ne_zero_of_algebraic hx
@@ -53,7 +53,7 @@ ne_zero_of_monic $ monic_irr_of_algebraic hx
 theorem irr_eq_zero_of_not_algebraic {x : K} (hx : ¬is_algebraic F x) : irr F x = 0 :=
 by rw [irr, irr_aux, (ideal.is_principal.eq_bot_iff_generator_eq_zero _).1, zero_mul];
 letI : module (polynomial F) (polynomial F) := ring.to_module;
-exact lattice.eq_bot_iff.2 (λ p hp, submodule.mem_bot.2 $ by_contradiction $ λ hnp,
+exact lattice.eq_bot_iff.2 (λ p hp, (submodule.mem_bot F).2 $ by_contradiction $ λ hnp,
 hx ⟨p, hnp, or.resolve_right hp (set.not_mem_empty _)⟩)
 
 theorem irr_dvd_iff (x : K) (p : polynomial F) :

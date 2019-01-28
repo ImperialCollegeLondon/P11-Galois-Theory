@@ -1,4 +1,4 @@
-import .algebra data.fintype linear_algebra.dimension
+import ring_theory.algebra data.fintype linear_algebra.dimension
 
 universes u v w
 

@@ -36,19 +36,15 @@ le_antisymm
     (set.range_subset_iff.2 $ λ r, or.inl ⟨algebra_map (algebra.adjoin R s) r, rfl⟩)
     (set.union_subset_union_left _ $ λ x hxs, ⟨⟨_, subset_adjoin hxs⟩, rfl⟩))
 
-def linear_map.module : module R (@linear_map R A A _ _ _ _ _) := linear_map.module
-
-local attribute [instance] linear_map.module
-
-set_option class.instance_max_depth 33
---set_option trace.class_instances true
+set_option class.instance_max_depth 50
 instance : has_mul (submodule R A) :=
 ⟨λ S1 S2, ⨆ s : S1, S2.map $ algebra.lmul R A s.1⟩
+set_option class.instance_max_depth 32
 
 variables {S1 S2 T : submodule R A} {s1 s2 : A}
 
 theorem mul_mem_mul (hs1 : s1 ∈ S1) (hs2 : s2 ∈ S2) : s1 * s2 ∈ S1 * S2 :=
-have _ ≤ S1 * S2 := le_supr _ ⟨s1, hs1⟩, this ⟨s2, hs2, rfl⟩
+(le_supr _ ⟨s1, hs1⟩ : _ ≤ S1 * S2) ⟨s2, hs2, rfl⟩
 
 theorem mul_le : S1 * S2 ≤ T ↔ ∀ (s1 ∈ S1) (s2 ∈ S2), s1 * s2 ∈ T :=
 ⟨λ H s1 hs1 s2 hs2, H (mul_mem_mul hs1 hs2),
@@ -58,7 +54,7 @@ theorem mul_le : S1 * S2 ≤ T ↔ ∀ (s1 ∈ S1) (s2 ∈ S2), s1 * s2 ∈ T :=
   {r : A} {C : A → Prop} (hr : r ∈ S1 * S2)
   (hm : ∀ (s1 ∈ S1) (s2 ∈ S2), C (s1 * s2))
   (h0 : C 0) (ha : ∀ x y, C x → C y → C (x + y))
-  (hs : ∀ (r : R) x, C x → C (has_scalar.smul.{u v} r x)) : C r :=
+  (hs : ∀ (r : R) x, C x → C (r • x)) : C r :=
 (@mul_le _ _ _ _ _ _ _ ⟨C, h0, ha, hs⟩).2 hm hr
 
 theorem madjoin_union : (algebra.adjoin R (s ∪ t)).to_submodule =
@@ -88,7 +84,7 @@ end
 
 variables R
 theorem span_mul_span (s1 s2 : set A) :
-  (span R s1 * span R s2 : submodule R A) = span R ((s1.prod s2).image (λ p, p.1 * p.2)) :=
+  span R s1 * span R s2 = span R ((s1.prod s2).image (λ p, p.1 * p.2)) :=
 le_antisymm
   (mul_le.2 $ λ x1 hx1 x2 hx2, span_induction hx1
     (λ y1 hy1, span_induction hx2

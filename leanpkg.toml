@@ -1,8 +1,8 @@
 [package]
 name = "Galois_Theory"
 version = "0.1"
-lean_version = "3.4.2"
+lean_version = "leanprover-community/lean:3.9.0"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover/mathlib", rev = "0eb9db6a1a8a605f0cf9e33873d0450f9f0ae9b0"}
+mathlib = {git = "https://github.com/leanprover/mathlib", rev = "94ff59ad7efdcf0ae51809c2ee0dfd0ae605d249"}

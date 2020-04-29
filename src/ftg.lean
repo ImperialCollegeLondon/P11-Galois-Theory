@@ -1,8 +1,8 @@
-import ring_theory.algebra data.fintype linear_algebra.dimension
+import ring_theory.algebra data.fintype.basic linear_algebra.dimension
 
 universes u v w
 
-variables (K : Type u) (L : Type v) [discrete_field K] [discrete_field L]
+variables (K : Type u) (L : Type v) [field K] [field L]
 
 class finite_Galois_extension extends algebra K L.
 

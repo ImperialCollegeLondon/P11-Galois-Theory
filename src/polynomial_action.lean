@@ -1,5 +1,4 @@
-import data.polynomial
-import .group_ring_action
+import data.polynomial algebra.group_ring_action
 
 noncomputable theory
 local attribute [instance] classical.dec

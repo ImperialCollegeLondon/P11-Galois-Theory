@@ -7,21 +7,8 @@ universes u v w
 
 variables {α : Type u} [field α] (G : finset (ring_aut α)) (f : ring_aut α)
 
--- #2563
-local attribute [reducible] ring_aut
-
 def fixed : set α :=
 { x | ∀ g ∈ G, (g : ring_aut α) x = x }
-
--- #2562
-instance is_subfield.inter {F : Type*} [field F] (S₁ S₂ : set F) [is_subfield S₁] [is_subfield S₂] :
-  is_subfield (S₁ ∩ S₂) :=
-{ inv_mem := λ x hx, ⟨is_subfield.inv_mem hx.1, is_subfield.inv_mem hx.2⟩ }
-
--- #2562
-instance is_subfield.Inter {F : Type*} [field F] {ι : Sort*} (S : ι → set F) [h : ∀ y : ι, is_subfield (S y)] :
-  is_subfield (set.Inter S) :=
-{ inv_mem := λ x hx, set.mem_Inter.2 $ λ y, is_subfield.inv_mem $ set.mem_Inter.1 hx y }
 
 def fixed_one : set α :=
 { x | f x = x }

@@ -33,6 +33,10 @@ theorem finset.smul_prod {M : Type u} [monoid M] {R : Type v} [comm_semiring R]
 finset.induction_on s (smul_one m) $ λ a s has ih,
 by rw [finset.prod_insert has, finset.prod_insert has, smul_mul', ih]
 
+theorem smul_neg' {M : Type u} [monoid M] {R : Type v} [ring R] [mul_semiring_action M R]
+  (m : M) (r : R) : m • (-r) = -(m • r) :=
+(mul_semiring_action.to_semiring_hom M R m).map_neg r
+
 theorem smul_sub' {M : Type u} [monoid M] {R : Type v} [ring R] [mul_semiring_action M R]
   (m : M) (r s : R) : m • (r - s) = m • r - m • s :=
 (mul_semiring_action.to_semiring_hom M R m).map_sub r s

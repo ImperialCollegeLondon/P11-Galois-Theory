@@ -1,42 +1,54 @@
 /- Reverse Galois theory. -/
 
-import field_theory.subfield
-import normal
+import field_theory.subfield ring_theory.polynomial
+import .symmetric_polynomial .normal
+
+noncomputable theory
+local attribute [instance] classical.dec
 
 universes u v w
 
-variables {α : Type u} [field α] (G : finset (ring_aut α)) (f : ring_aut α)
+variables (G : Type u) [group G] (F : Type v) [field F] [mul_semiring_action G F] (g : G)
 
-def fixed : set α :=
-{ x | ∀ g ∈ G, (g : ring_aut α) x = x }
+def fixed : set F :=
+{ x | ∀ g : G, g • x = x }
 
-def fixed_one : set α :=
-{ x | f x = x }
+def fixed_one : set F :=
+{ x | g • x = x }
 
-instance fixed_one.is_subfield : is_subfield (fixed_one f) :=
-{ zero_mem := f.map_zero,
-  add_mem := λ x y hx hy, (f.map_add x y).trans $ congr_arg2 _ hx hy,
-  neg_mem := λ x hx, (f.map_neg x).trans $ congr_arg _ hx,
-  one_mem := f.map_one,
-  mul_mem := λ x y hx hy, (f.map_mul x y).trans $ congr_arg2 _ hx hy,
-  inv_mem := λ x hx, f.to_ring_hom.map_inv.trans $ congr_arg _ hx }
+instance fixed_one.is_subfield : is_subfield (fixed_one G F g) :=
+{ zero_mem := smul_zero g,
+  add_mem := λ x y hx hy, (smul_add g x y).trans $ congr_arg2 _ hx hy,
+  neg_mem := λ x hx, (smul_neg' g x).trans $ congr_arg _ hx,
+  one_mem := smul_one g,
+  mul_mem := λ x y hx hy, (smul_mul' g x y).trans $ congr_arg2 _ hx hy,
+  inv_mem := λ x hx, (smul_inv F g x).trans $ congr_arg _ hx }
 
-theorem fixed_eq_Inter_fixed_one : fixed G = ⋂ (g : ↥(↑G : set (ring_aut α))), fixed_one g.val :=
-set.ext $ λ x, ⟨λ hx, set.mem_Inter.2 $ λ g, hx g.1 g.2, λ hx g hg, by convert set.mem_Inter.1 hx ⟨g, hg⟩⟩
+theorem fixed_eq_Inter_fixed_one : fixed G F = ⋂ g : G, fixed_one G F g :=
+set.ext $ λ x, ⟨λ hx, set.mem_Inter.2 $ λ g, hx g, λ hx g, by convert set.mem_Inter.1 hx g⟩
 
-instance fixed.is_subfield : is_subfield (fixed G) :=
-by convert @is_subfield.Inter α _ (↑G : set (ring_aut α)) (λ g, fixed_one g.1) _; rw fixed_eq_Inter_fixed_one
+instance fixed.is_subfield : is_subfield (fixed G F) :=
+by convert @is_subfield.Inter F _ G (fixed_one G F) _; rw fixed_eq_Inter_fixed_one
 
 @[priority 1000000000]
-instance fixed.algebra : algebra (fixed G) α :=
+instance fixed.algebra : algebra (fixed G F) F :=
 algebra.of_subring _
 
+variables [fintype G] (x : F)
 
-#exit
+def fixed.polynomial : polynomial (fixed G F) :=
+(mul_semiring_action.polynomial G F x).to_subring _ $ λ c hc g,
+let ⟨hc0, n, hn⟩ := finsupp.mem_frange.1 hc in
+hn ▸ mul_semiring_action.polynomial.coeff G F x g n
 
--- oh no i need symmetric polynomials
-theorem is_integral_fixed (h1 : (1 : ring_aut α) ∈ G) (x : α) : is_integral (fixed G) x :=
-⟨G.prod $ λ f, polynomial.X - _, _⟩
+theorem fixed.polynomial.monic : (fixed.polynomial G F x).monic :=
+subtype.eq $ mul_semiring_action.polynomial.monic G F x
 
-instance fixed.normal (HG : set.finite G) : normal (fixed G) α :=
-λ x, ⟨⟨_, _⟩, _⟩
+theorem fixed.polynomial.eval₂ : (fixed.polynomial G F x).eval₂ subtype.val x = 0 :=
+mul_semiring_action.polynomial.eval G F x
+
+theorem is_integral_fixed : is_integral (fixed G F) x :=
+⟨fixed.polynomial G F x, fixed.polynomial.monic G F x, fixed.polynomial.eval₂ G F x⟩
+
+instance fixed.normal : normal (fixed G F) F :=
+λ x, ⟨is_integral_fixed G F x, sorry⟩

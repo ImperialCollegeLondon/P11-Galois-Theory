@@ -1,3 +1,5 @@
+-- #2586
+
 import data.polynomial algebra.group_ring_action
 
 noncomputable theory

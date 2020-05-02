@@ -37,27 +37,28 @@ algebra.of_subring _
 variables [fintype G] (x : F)
 
 def fixed.polynomial : polynomial (fixed G F) :=
-(mul_semiring_action.polynomial G F x).to_subring _ $ λ c hc g,
+(mul_semiring_action.minpoly G F x).to_subring _ $ λ c hc g,
 let ⟨hc0, n, hn⟩ := finsupp.mem_frange.1 hc in
-hn ▸ mul_semiring_action.polynomial.coeff G F x g n
+hn ▸ mul_semiring_action.minpoly.coeff G F x g n
 
 theorem fixed.polynomial.monic : (fixed.polynomial G F x).monic :=
-subtype.eq $ mul_semiring_action.polynomial.monic G F x
+subtype.eq $ mul_semiring_action.minpoly.monic G F x
 
 theorem fixed.polynomial.eval₂ : (fixed.polynomial G F x).eval₂ subtype.val x = 0 :=
-mul_semiring_action.polynomial.eval G F x
+mul_semiring_action.minpoly.eval G F x
 
 theorem is_integral_fixed : is_integral (fixed G F) x :=
 ⟨fixed.polynomial G F x, fixed.polynomial.monic G F x, fixed.polynomial.eval₂ G F x⟩
 
-#check splitting_theorem
+-- why is the statement so slow to elaborate?
+theorem fixed.polynomial.irreducible : irreducible (fixed.polynomial G F x : polynomial (fixed G F)) :=
+sorry
+
+theorem fixed.polynomial.minimal_polynomial :
+  (minimal_polynomial (is_integral_fixed G F x) : polynomial (fixed G F)) = fixed.polynomial G F x :=
+_
+
+#exit
 
 instance fixed.normal : normal (fixed G F) F :=
-λ x,
-let H := is_integral_fixed G F x in 
-⟨H, (splitting_theorem F 
-                       (fixed.polynomial G F x) 
-                       (sorry) 
-                       (minimal_polynomial H)
-                       (minimal_polynomial.irreducible H)
-                       ⟨x, minimal_polynomial.aeval H⟩)⟩
+λ x, ⟨is_integral_fixed G F x, _⟩

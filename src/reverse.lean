@@ -1,7 +1,7 @@
 /- Reverse Galois theory. -/
 
 import field_theory.subfield ring_theory.polynomial
-import .symmetric_polynomial .normal
+import .symmetric_polynomial .normal .splitting_theorem
 
 noncomputable theory
 local attribute [instance] classical.dec
@@ -50,5 +50,14 @@ mul_semiring_action.polynomial.eval G F x
 theorem is_integral_fixed : is_integral (fixed G F) x :=
 ⟨fixed.polynomial G F x, fixed.polynomial.monic G F x, fixed.polynomial.eval₂ G F x⟩
 
+#check splitting_theorem
+
 instance fixed.normal : normal (fixed G F) F :=
-λ x, ⟨is_integral_fixed G F x, sorry⟩
+λ x,
+let H := is_integral_fixed G F x in 
+⟨H, (splitting_theorem F 
+                       (fixed.polynomial G F x) 
+                       (sorry) 
+                       (minimal_polynomial H)
+                       (minimal_polynomial.irreducible H)
+                       ⟨x, minimal_polynomial.aeval H⟩)⟩

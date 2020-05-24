@@ -1,6 +1,6 @@
 /- Symmetric polynomials. -/
 
-import .polynomial_action .of_quotient_stabilizer
+import algebra.group_ring_action .of_quotient_stabilizer
 
 noncomputable theory
 local attribute [instance] classical.dec

@@ -1,7 +1,7 @@
 /- Reverse Galois theory. -/
 
 import field_theory.subfield ring_theory.polynomial
-import .symmetric_polynomial .normal .splitting_theorem
+import .symmetric_polynomial .normal .splitting_field .minimal_polynomial
 
 noncomputable theory
 local attribute [instance] classical.dec
@@ -47,18 +47,20 @@ subtype.eq $ mul_semiring_action.minpoly.monic G F x
 theorem fixed.polynomial.eval₂ : (fixed.polynomial G F x).eval₂ subtype.val x = 0 :=
 mul_semiring_action.minpoly.eval G F x
 
-theorem is_integral_fixed : is_integral (fixed G F) x :=
+theorem fixed.is_integral : is_integral (fixed G F) x :=
 ⟨fixed.polynomial G F x, fixed.polynomial.monic G F x, fixed.polynomial.eval₂ G F x⟩
 
 -- why is the statement so slow to elaborate?
-theorem fixed.polynomial.irreducible : irreducible (fixed.polynomial G F x : polynomial (fixed G F)) :=
+theorem fixed.polynomial.irreducible : irreducible (fixed.polynomial G F x) :=
 sorry
 
 theorem fixed.polynomial.minimal_polynomial :
-  (minimal_polynomial (is_integral_fixed G F x) : polynomial (fixed G F)) = fixed.polynomial G F x :=
-_
-
-#exit
+  fixed.polynomial G F x = minimal_polynomial (fixed.is_integral G F x) :=
+minimal_polynomial.unique' _ (fixed.polynomial.irreducible G F x)
+  (fixed.polynomial.eval₂ G F x) (fixed.polynomial.monic G F x)
 
 instance fixed.normal : normal (fixed G F) F :=
-λ x, ⟨is_integral_fixed G F x, _⟩
+λ x, ⟨fixed.is_integral G F x, polynomial.splits_of_splits_id' _ $
+by { rw [← fixed.polynomial.minimal_polynomial, fixed.polynomial,
+    polynomial.map_to_subring, mul_semiring_action.minpoly],
+  exact polynomial.splits_prod _ (λ _ _, polynomial.splits_X_sub_C _) }⟩

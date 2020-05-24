@@ -1,4 +1,4 @@
-import data.polynomial
+import ring_theory.polynomial
 
 universe u
 
@@ -13,5 +13,9 @@ begin
   rw [← hu, leading_coeff_mul, hp, one_mul, leading_coeff_C] at hq,
   rwa [hq, C_1, mul_one] at hu
 end
+
+theorem map_to_subring {R : Type u} [comm_ring R] (p : polynomial R) (T : set R) [is_subring T]
+  (hp : ↑p.frange ⊆ T) : (p.to_subring T hp).map (algebra_map T R) = p :=
+ext $ λ n, coeff_map _ _
 
 end polynomial

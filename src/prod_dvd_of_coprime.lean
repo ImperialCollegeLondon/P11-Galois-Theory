@@ -68,18 +68,42 @@ end
 
 /-
 
-x,y,z pwise coprime
-a x + b z = 1 
-c y + d z = 1
-xy,z coprime?
-a c x y + (...) z = 1
+t={w,x,y},z pwise coprime
+t is w inserted into (r = {x,y})
+a w + b z = 1
+c xy + d z = 1 
+
+a c w xy + (...) z = 1
 
 -/
 
+open_locale classical
+
+
+#check @finset.mem_insert_self
+#check @finset.mem_insert_of_mem
 theorem is_coprime_prod_of_pairwise_coprime {α : Type u} [comm_ring α] 
-  {I : Type v} {s : I → α} (hs : pairwise_coprime s) {t : finset I} {a : I} 
-  (hat : a ∉ t) : ideal.is_coprime (s a) (t.prod s) :=
-sorry
+  {I : Type v} {s : I → α} (hs : pairwise_coprime s) {t : finset I} {x : I} :
+  x ∉ t → ideal.is_coprime (s x) (t.prod s) :=
+finset.induction_on t (λ _, ideal.is_coprime_def'.2 ⟨0,1,by rw [zero_mul, zero_add, one_mul]; refl⟩) 
+(λ a r har ih hxar,
+  have hxa : x ≠ a, from mt (λ h, (h ▸ finset.mem_insert_self x r : x ∈ insert a r)) hxar,
+  have hxr : x ∉ r, from mt finset.mem_insert_of_mem hxar,
+  let ⟨ia,ib,hiaib⟩ := ideal.is_coprime_def'.1 (ih hxr) in 
+  let ⟨c, d,hcd⟩ := ideal.is_coprime_def'.1 (hs _ _ hxa) in
+  ideal.is_coprime_def'.2 ⟨ia * s x * c + ia * d *s a + ib * r.prod s * c, ib * d,
+  calc  (ia * s x * c + ia * d * s a + ib * r.prod s * c) * s x + ib * d * (insert a r).prod s
+      = (ia * s x * c + ia * d * s a + ib * r.prod s * c) * s x + ib * d * (s a * r.prod s) : by rw finset.prod_insert har
+  ... = (ia * s x + ib * r.prod s) * (c * s x + d * s a) : by ring
+  ... = 1 : by rw [hiaib, hcd, mul_one]
+  -- the power of ring
+  /- by rw [← hcd, ← one_mul (c * s x + d * s a), ← hiaib, mul_add, add_mul _ _ (c * s x), 
+  add_mul _ _ (d * s a), add_mul _ _ (s x), add_mul _ _ (s x), ← mul_assoc, ← mul_assoc, 
+  ← add_assoc, mul_assoc ia (s x) (d * s a), mul_comm (s x) _, ← mul_assoc, ← mul_assoc,
+  add_assoc _ (ia * d * s a * s x) _, add_comm (ia * d * s a * s x) _, ← add_assoc, 
+  finset.prod_insert har, mul_comm (s a) _, ← mul_assoc, mul_assoc ib d _, mul_comm d _, 
+  ← mul_assoc ib (r.prod (λ (x : I), s x)) d, mul_assoc (ib * r.prod s) d _] -/
+  ⟩)
 
 theorem finset.prod_dvd_of_coprime {α : Type u} [comm_ring α] {I : Type v}
   {s : I → α} {z : α} (Hs : pairwise_coprime s) (Hs1 : ∀ i, s i ∣ z) {t : finset I} :

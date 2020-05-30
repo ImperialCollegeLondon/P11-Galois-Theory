@@ -16,3 +16,7 @@ rfl
 theorem of_quotient_stabilizer_smul (g : α) (g' : quotient_group.quotient (mul_action.stabilizer α x)) :
   of_quotient_stabilizer α x (g • g') = g • of_quotient_stabilizer α x g' :=
 quotient.induction_on' g' $ λ _, mul_smul _ _ _
+
+theorem injective_of_quotient_stabilizer : function.injective (of_quotient_stabilizer α x) :=
+λ y₁ y₂, quotient.induction_on₂' y₁ y₂ $ λ g₁ g₂ (H : g₁ • x = g₂ • x), quotient.sound' $
+show (g₁⁻¹ * g₂) • x = x, by rw [mul_smul, ← H, mul_action.inv_smul_smul]

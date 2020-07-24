@@ -23,17 +23,13 @@ variables [field F] [field L] [algebra F L] [finite_dimensional F L]
 lemma sub_eq_plus_minus (a : F) : (X - C a) = (X + C (-a)) :=
 by { simp, ring }
 
-lemma zero_eq_zero_coe : (0 : with_bot ℕ) = ↑(0 : ℕ) :=
-by simp
+lemma zero_eq_zero_coe : (0 : with_bot ℕ) = ↑(0 : ℕ) := rfl
 
-lemma one_eq_one_coe : (1 : with_bot ℕ) = ↑(1 : ℕ) :=
-by simp
+lemma one_eq_one_coe : (1 : with_bot ℕ) = ↑(1 : ℕ) := rfl
 
-lemma two_eq_two_coe : (2 : with_bot ℕ) = ↑(2 : ℕ) :=
-by simp [bit0]
+lemma two_eq_two_coe : (2 : with_bot ℕ) = ↑(2 : ℕ) := rfl
 
-lemma coe_sum_eq_sum_coe (a b : ℕ) : ↑(a + b) = ↑a + (↑b : with_bot ℕ) :=
-by simp
+lemma coe_sum_eq_sum_coe (a b : ℕ) : ↑(a + b) = ↑a + (↑b : with_bot ℕ) := rfl
 
 lemma ne_zero_of_degree_eq_n_gt {p : polynomial F} {n : nat} 
   (hn : 0 < n) (hp : degree p = n) : (p ≠ 0) :=

@@ -1,12 +1,13 @@
-import data.finsupp algebra.pi_instances
+import data.finsupp algebra.big_operators.pi
 
 universes u v w u₁ v₁ w₁
+open_locale big_operators
 
 variables {α : Type u} {ι : Type v} {β : Type w} [add_comm_monoid β]
 variables {s : finset α} {f : α → (ι →₀ β)} (i : ι)
 
-theorem finset.sum_apply' : (s.sum f) i = s.sum (λ x, f x i) :=
-(s.sum_hom $ λ g : ι →₀ β, g i).symm
+theorem finset.sum_apply' : (∑ k in s, f k) i = ∑ k in s, f k i :=
+(s.sum_hom $ finsupp.eval_add_hom i).symm
 
 variables {γ : Type u₁} {δ : Type v₁} [add_comm_monoid δ]
 variables (g : ι →₀ β) (k : ι → β → γ → δ) (x : γ)
@@ -20,6 +21,6 @@ include h0 h1
 
 open_locale classical
 
-theorem finsupp.sum_sum_index' : (s.sum f).sum t = s.sum (λ x, (f x).sum t) :=
+theorem finsupp.sum_sum_index' : (∑ x in s, f x).sum t = ∑ x in s, (f x).sum t :=
 finset.induction_on s rfl $ λ a s has ih,
 by simp_rw [finset.sum_insert has, finsupp.sum_add_index h0 h1, ih]

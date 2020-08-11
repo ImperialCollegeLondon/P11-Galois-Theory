@@ -54,6 +54,7 @@ begin
   refine finset.induction_on s (λ _, linear_independent_empty_type $ λ ⟨x⟩, x.2) (λ a s has ih hs, _),
   rw finset.coe_insert at hs ⊢,
   rw linear_independent_insert (mt finset.mem_coe.1 has) at hs,
+  rw linear_independent_insert' (mt finset.mem_coe.1 has),
   sorry
   -- refine (ih hs.1).insert _,
   -- rw [finset.map_insert, finset.coe_insert],

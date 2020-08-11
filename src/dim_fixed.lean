@@ -1,13 +1,11 @@
--- depends on #2839 and a future PR refactoring linear independent
-
-#exit
-
 import linear_algebra.dimension
-import .reverse .faithful_mul_semiring_action .dimension .linear_independent .group_ring_action .finsupp
+import field_theory.fixed
+import .faithful_mul_semiring_action .dimension .linear_independent .group_ring_action .finsupp
 
 universes u v
 
 open_locale classical
+open mul_action
 
 variables (G : Type u) [group G] (F : Type v) [field F] [mul_semiring_action G F] (g : G)
 
@@ -16,7 +14,7 @@ theorem mem_fixed {s : finset F} {a : F} (has : a ∉ s)
   (h1 : linear_independent F (λ i : (↑(s.map $ mul_action.to_fun G F) : set (G → F)), (i : G → F)))
   {L : F →₀ F} (h2 : L ∈ finsupp.supported F F (↑s : set F))
   (h3 : mul_action.to_fun G F a = s.sum (λ i, L i • mul_action.to_fun G F i)) {i : F} :
-  L i ∈ fixed G F :=
+  L i ∈ fixed_points G F :=
 begin
   intro g,
   by_cases hi : i ∈ s,
@@ -35,7 +33,8 @@ begin
           (λ i (a : F), (a • ↑i : G → F))
           g',
       simp_rw pi.smul_apply,
-      rw finsupp.sum_sum_index', } }
+      rw finsupp.sum_sum_index', iterate 3 { sorry } } },
+  sorry
   -- intro g,
 /-   have h3 := congr_fun h2 1,
   have h4 := congr_fun h2 g,
@@ -49,12 +48,13 @@ begin
 
 -- #exit
 theorem linear_independent_smul_of_linear_independent {s : finset F} :
-  linear_independent (fixed G F) (λ i : (↑s : set F), (i : F)) →
+  linear_independent (fixed_points G F) (λ i : (↑s : set F), (i : F)) →
   linear_independent F (λ i : (↑s : set F), mul_action.to_fun G F i) :=
 begin
   refine finset.induction_on s (λ _, linear_independent_empty_type $ λ ⟨x⟩, x.2) (λ a s has ih hs, _),
   rw finset.coe_insert at hs ⊢,
   rw linear_independent_insert (mt finset.mem_coe.1 has) at hs,
+  sorry
   -- refine (ih hs.1).insert _,
   -- rw [finset.map_insert, finset.coe_insert],
   -- rw [finset.coe_insert, linear_independent_insert (mt finset.mem_coe.1 has)] at hs,
@@ -69,7 +69,7 @@ end
 
 variables [fintype G]
 
-theorem fixed.dim_le_card : vector_space.dim (fixed G F) F ≤ fintype.card G :=
+theorem fixed.dim_le_card : vector_space.dim (fixed_points G F) F ≤ fintype.card G :=
 begin
   refine dim_le (λ s hs, cardinal.nat_cast_le.1 _),
   rw [← @dim_fun' F G, ← cardinal.lift_nat_cast.{v (max u v)},
